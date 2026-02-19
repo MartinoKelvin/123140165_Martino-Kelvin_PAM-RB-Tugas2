@@ -40,6 +40,7 @@ kotlin {
             implementation(libs.androidx.lifecycle.viewmodelCompose)
             implementation(libs.androidx.lifecycle.runtimeCompose)
             implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.0")
+            implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.6.0")
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)

@@ -1,33 +1,20 @@
 package org.example.project
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.safeContentPadding
-import androidx.compose.material3.Button
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import kotlinx.coroutines.async
-import org.jetbrains.compose.resources.painterResource
-
-import pertemuan2.composeapp.generated.resources.Res
-
-import pertemuan2.composeapp.generated.resources.profil
-
-
+import kotlinx.coroutines.launch
+import androidx.compose.ui.tooling.preview.Preview
 
 @Composable
 @Preview
@@ -35,61 +22,146 @@ fun App() {
     MaterialTheme {
         val viewModel = remember { NewsViewModel() }
 
-        var currentNews by remember { mutableStateOf("Menunggu Berita...") }
-        var newsDetail by remember { mutableStateOf(" ") }
+        val newsList = remember { mutableStateListOf<News>() }
+
+        var searchQuery by remember { mutableStateOf("") }
+        var selectedCategory by remember { mutableStateOf("All") }
+        val categories = listOf("All", "Tech", "Local", "Politics")
 
         val readCount by viewModel.readCount.collectAsState()
 
-        LaunchedEffect(Unit){
-            getFilterNews()
-                .collect { newsString ->
-                    currentNews = newsString
-                    viewModel.incrementRead()
-
-                    newsDetail = "Mengambil detail..."
-                    val detailResult = async { viewModel.getNewsDetail(newsString) }
-                    newsDetail = detailResult.await()
-                }
+        LaunchedEffect(Unit) {
+            getFilterNews().collect { news ->
+                newsList.add(0, news)
+            }
         }
 
-        Column(
+        val displayedNews = newsList.filter {
+            (selectedCategory == "All" || it.category == selectedCategory) &&
+                    it.title.contains(searchQuery, ignoreCase = true)
+        }
+
+        LazyColumn(
             modifier = Modifier
                 .background(MaterialTheme.colorScheme.primaryContainer)
-                .safeContentPadding()
                 .fillMaxSize(),
-
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center,
+            contentPadding = PaddingValues(16.dp)
         ) {
+            item {
+                Text(
+                    text = "Martino News Provider",
+                    style = MaterialTheme.typography.headlineLarge,
+                    color = MaterialTheme.colorScheme.primary,
+                    fontWeight = FontWeight.ExtraBold
+                )
+                Text(text = "News Feed Simulator", style = MaterialTheme.typography.labelMedium)
+                Spacer(modifier = Modifier.height(24.dp))
+            }
+
+            item {
+                OutlinedTextField(
+                    value = searchQuery,
+                    onValueChange = { searchQuery = it },
+                    label = { Text("Cari berita...") },
+                    modifier = Modifier.fillMaxWidth(0.9f),
+                    shape = RoundedCornerShape(12.dp)
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+            }
+
+            item {
+                LazyRow(
+                    modifier = Modifier.fillMaxWidth(0.9f),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    items(categories) { category ->
+                        FilterChip(
+                            selected = selectedCategory == category,
+                            onClick = { selectedCategory = category },
+                            label = { Text(category) }
+                        )
+                    }
+                }
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Surface(
+                    shape = RoundedCornerShape(8.dp),
+                    color = MaterialTheme.colorScheme.secondaryContainer
+                ) {
+                    Text(
+                        text = "Total Berita Dibaca: $readCount",
+                        modifier = Modifier.padding(8.dp),
+                        style = MaterialTheme.typography.labelLarge,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+                Spacer(modifier = Modifier.height(20.dp))
+            }
+
+            items(displayedNews) { news ->
+                var detailText by remember { mutableStateOf("Klik detail untuk membaca...") }
+                val scope = rememberCoroutineScope()
+
+                NewsCard(
+                    news = news,
+                    detailText = detailText,
+                    onDetailClick = {
+                        viewModel.incrementRead()
+
+                        scope.launch {
+                            detailText = "Sedang mengambil konten..."
+                            detailText = viewModel.getNewsDetail(news.title)
+                        }
+                    }
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+            }
+        }
+    }
+}
+
+@Composable
+fun NewsCard(news: News, detailText: String, onDetailClick: () -> Unit) {
+    Card(
+        modifier = Modifier.fillMaxWidth(0.9f),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        shape = RoundedCornerShape(16.dp)
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                Text(
+                    text = news.category,
+                    color = MaterialTheme.colorScheme.primary,
+                    fontWeight = FontWeight.Bold,
+                    style = MaterialTheme.typography.labelMedium
+                )
+                // Menampilkan Timestamp
+                Text(text = news.time, style = MaterialTheme.typography.labelSmall)
+            }
+
+            Spacer(modifier = Modifier.height(4.dp))
+
             Text(
-                text = "Martino News Provider",
-                style = MaterialTheme.typography.headlineLarge,
-                color = MaterialTheme.colorScheme.primary
+                text = news.title,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold
             )
 
             Spacer(modifier = Modifier.height(8.dp))
 
             Text(
-                text = "News Feed Simulator",
-                style = MaterialTheme.typography.headlineSmall
+                text = detailText,
+                style = MaterialTheme.typography.bodySmall,
+                color = Color.DarkGray
             )
 
-            Spacer(modifier = Modifier.height(24.dp))
-
-            // Menampilkan berita hasil Flow
-            Text(text = currentNews, style = MaterialTheme.typography.bodyLarge, textAlign = TextAlign.Center)
-
-            // Menampilkan detail hasil Async Coroutine
-            Text(text = newsDetail, style = MaterialTheme.typography.bodySmall, textAlign = TextAlign.Center)
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Menampilkan jumlah dari StateFlow
-            Text(
-                text = "Berita dibaca: $readCount",
-                style = MaterialTheme.typography.labelLarge,
-                fontWeight = FontWeight.Bold
-            )
+            Button(
+                onClick = onDetailClick,
+                modifier = Modifier.align(Alignment.End).padding(top = 8.dp)
+            ) {
+                Text("Baca detail")
+            }
         }
     }
 }
