@@ -136,7 +136,7 @@ fun NewsCard(news: News, detailText: String, onDetailClick: () -> Unit) {
                     fontWeight = FontWeight.Bold,
                     style = MaterialTheme.typography.labelMedium
                 )
-                // Menampilkan Timestamp
+
                 Text(text = news.time, style = MaterialTheme.typography.labelSmall)
             }
 

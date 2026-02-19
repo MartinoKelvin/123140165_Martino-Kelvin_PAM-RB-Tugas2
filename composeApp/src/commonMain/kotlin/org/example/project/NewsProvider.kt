@@ -3,7 +3,7 @@ package org.example.project
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
-// Import ini untuk mendapatkan waktu sekarang
+
 import kotlinx.datetime.Clock
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
@@ -20,10 +20,9 @@ fun newsFlow(): Flow<News> = flow {
 
     while(true) {
         for (news in newsList) {
-            delay(2000) // Jeda 2 detik sesuai tugas
+            delay(2000)
 
             val now = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
-
             val timestamp = "${now.hour.toString().padStart(2, '0')}:" +
                     "${now.minute.toString().padStart(2, '0')}:" +
                     "${now.second.toString().padStart(2, '0')}"
