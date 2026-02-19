@@ -1,3 +1,26 @@
+
+## Nama     : Martino Kelvin
+
+## NIM      : 123140165
+
+
+### Result
+<img width="575" height="1280" alt="image" src="https://github.com/user-attachments/assets/05ea7d33-13ee-4a03-9c67-7e306671439e" />
+
+---
+
+### Fitur - Fitur :
+1. Flow yang mensimulasikan data berita baru setiap 2 detik
+   <img width="680" height="540" alt="image" src="https://github.com/user-attachments/assets/84c43110-400c-481c-8da9-857e994c0d61" />
+
+2. Filter berita berdasarkan kategori tertentu
+  <img width="570" height="314" alt="image" src="https://github.com/user-attachments/assets/62e3a3e1-60b5-4f69-9dc4-2b05285a8052" />
+
+3. Coroutines untuk mengambil detail berita secara async
+   <img width="874" height="364" alt="image" src="https://github.com/user-attachments/assets/e31c859d-91c7-4dba-9adc-b03a56fcd3b2" />
+
+
+
 This is a Kotlin Multiplatform project targeting Android, iOS.
 
 * [/composeApp](./composeApp/src) is for code that will be shared across your Compose Multiplatform applications.
